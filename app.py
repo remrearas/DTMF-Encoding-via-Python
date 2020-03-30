@@ -1,8 +1,11 @@
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 from functools import wraps
 from scipy.io.wavfile import write
 from matplotlib.backends.backend_pdf import PdfPages
+from PyPDF2.pdf import PdfFileReader, PdfFileWriter
+
 
 figures = []
 
@@ -71,9 +74,25 @@ class DTMF:
 if __name__ == "__main__":
     dtmf = DTMF()
     raw_number = '21501322'
-    write('%s.wav' % raw_number,
+    # Generate wave file
+    write('./output/%s.wav' % raw_number,
           dtmf.Fs,
           dtmf.encode_raw(raw_number))
+    # PDF Reports
     with PdfPages('%s.pdf' % raw_number) as pdf:
         for figure in figures:
             pdf.savefig(figure)
+    output = PdfFileWriter()
+    pdfOne = PdfFileReader(open("./assets/Cover.pdf", "rb"))
+    pdfTwo = PdfFileReader(open('%s.pdf' % raw_number, "rb"))
+
+    output.addPage(pdfOne.getPage(0))
+    for pageNum in range(pdfTwo.numPages):
+        pageObj = pdfTwo.getPage(pageNum)
+        output.addPage(pageObj)
+
+    outputStream = open('./output/Chart-%s.pdf' % raw_number, "wb")
+    output.write(outputStream)
+    outputStream.close()
+    os.remove('%s.pdf' % raw_number)
+
