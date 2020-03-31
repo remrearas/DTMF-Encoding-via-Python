@@ -1,11 +1,13 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import scipy.signal
 from functools import wraps
 from scipy.io.wavfile import write
 from matplotlib.backends.backend_pdf import PdfPages
 from PyPDF2.pdf import PdfFileReader, PdfFileWriter
 
+PLOT_SAMPLE = 100
 
 figures = {}
 
@@ -17,7 +19,7 @@ def signal_figure(f):
         if f.__name__ == 'build_signal':
             if args[1] not in figures:
                 fig, ax = plt.subplots()
-                ax.plot(args[0].time, res[0])
+                ax.plot(scipy.signal.resample(res[0], PLOT_SAMPLE))
                 ax.set_title('%s (%s Hz x %s Hz) - Fs=%d Hz - Duration=%f s' % (args[1],
                                                                                 res[1],
                                                                                 res[2],
@@ -27,9 +29,8 @@ def signal_figure(f):
 
         if f.__name__ == 'encode_raw':
             fig, ax = plt.subplots()
-            ax.plot(res)
-            ax.set_title('Zoomed Chart x16 %s' % (args[1]))
-            ax.set_xlim(0, res.shape[0] / 16)
+            ax.plot(scipy.signal.resample(res, 100))
+            ax.set_title('DTMF Encoded %s' % (args[1]))
             figures[args[1]] = fig
         return res
     return decor
@@ -89,6 +90,7 @@ if __name__ == "__main__":
     pdfTwo = PdfFileReader(open('%s.pdf' % raw_number, "rb"))
 
     output.addPage(pdfOne.getPage(0))
+    output.addPage(pdfOne.getPage(1))
     for pageNum in range(pdfTwo.numPages):
         pageObj = pdfTwo.getPage(pageNum)
         output.addPage(pageObj)
