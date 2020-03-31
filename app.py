@@ -26,12 +26,11 @@ def signal_figure(f):
                 figures[args[1]] = fig
 
         if f.__name__ == 'encode_raw':
-            if args[1] not in figures:
-                fig, ax = plt.subplots()
-                ax.plot(res)
-                ax.set_title('Zoomed Chart x16 %s' % (args[1]))
-                ax.set_xlim(0, res.shape[0] / 16)
-                figures[args[1]] = fig
+            fig, ax = plt.subplots()
+            ax.plot(res)
+            ax.set_title('Zoomed Chart x16 %s' % (args[1]))
+            ax.set_xlim(0, res.shape[0] / 16)
+            figures[args[1]] = fig
         return res
     return decor
 
