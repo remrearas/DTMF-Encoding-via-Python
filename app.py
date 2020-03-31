@@ -7,7 +7,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 from PyPDF2.pdf import PdfFileReader, PdfFileWriter
 
 
-figures = []
+figures = {}
 
 
 def signal_figure(f):
@@ -15,20 +15,23 @@ def signal_figure(f):
     def decor(*args, **kwargs):
         res = f(*args, **kwargs)
         if f.__name__ == 'build_signal':
-            fig, ax = plt.subplots()
-            ax.plot(args[0].time, res[0])
-            ax.set_title('%s (%s Hz x %s Hz) - Fs=%d Hz - Duration=%f s' % (args[1],
-                                                                            res[1],
-                                                                            res[2],
-                                                                            args[0].Fs,
-                                                                            args[0].duration))
-            figures.append(fig)
+            if args[1] not in figures:
+                fig, ax = plt.subplots()
+                ax.plot(args[0].time, res[0])
+                ax.set_title('%s (%s Hz x %s Hz) - Fs=%d Hz - Duration=%f s' % (args[1],
+                                                                                res[1],
+                                                                                res[2],
+                                                                                args[0].Fs,
+                                                                                args[0].duration))
+                figures[args[1]] = fig
+
         if f.__name__ == 'encode_raw':
-            fig, ax = plt.subplots()
-            ax.plot(res)
-            ax.set_title('Zoomed Chart x16 %s' % (args[1]))
-            ax.set_xlim(0, res.shape[0] / 16)
-            figures.append(fig)
+            if args[1] not in figures:
+                fig, ax = plt.subplots()
+                ax.plot(res)
+                ax.set_title('Zoomed Chart x16 %s' % (args[1]))
+                ax.set_xlim(0, res.shape[0] / 16)
+                figures[args[1]] = fig
         return res
     return decor
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     # PDF Reports
     with PdfPages('%s.pdf' % raw_number) as pdf:
         for figure in figures:
-            pdf.savefig(figure)
+            pdf.savefig(figures[figure])
     output = PdfFileWriter()
     pdfOne = PdfFileReader(open("./assets/Cover.pdf", "rb"))
     pdfTwo = PdfFileReader(open('%s.pdf' % raw_number, "rb"))
