@@ -29,7 +29,7 @@ def signal_figure(f):
 
         if f.__name__ == 'encode_raw':
             fig, ax = plt.subplots()
-            ax.plot(scipy.signal.resample(res, 100))
+            ax.plot(scipy.signal.resample(res, PLOT_SAMPLE))
             ax.set_title('DTMF Encoded %s' % (args[1]))
             figures[args[1]] = fig
         return res
